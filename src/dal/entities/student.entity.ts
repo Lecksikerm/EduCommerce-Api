@@ -22,4 +22,5 @@ export class Student extends Base {
   @Exclude()
   @Column()
   password: string;
+    role: string;
 }

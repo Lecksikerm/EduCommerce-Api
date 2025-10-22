@@ -63,3 +63,13 @@ export class CreateStudentDto extends PasswordDto {
   @MaxLength(20)
   matricNo?: string;
 }
+export class StudentLoginDto extends PasswordDto {
+  @ApiProperty({
+    example: 'adeola@gmail.com',
+    description: 'Email address of the student',
+  })
+  @IsEmail({}, { message: 'Invalid email format' })
+  @IsNotEmpty({ message: 'Email is required' })
+  email: string;
+
+}

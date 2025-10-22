@@ -16,6 +16,7 @@ export type StudentSigninData = {
     firstName: string;
     lastName: string;
     role: string;
+    message: string;
 };
 
 export type AuthResult = {
@@ -58,4 +59,28 @@ export class AuthService {
             data: studentData,
         };
     }
+    async signIn({ email, password }: AuthInput): Promise<StudentSigninData> {
+        const student = await this.studentsService.findByEmail(email);
+        if (!student) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+
+        const passwordMatches = await bcrypt.compare(password, student.password);
+        if (!passwordMatches) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+
+        return {
+            studentId: student.id,
+            email: student.email,
+            firstName: student.firstName,
+            lastName: student.lastName,
+            role: student.role,
+            message: 'Sign-in successful',
+        };
+    }
+
+
 }
+
+
