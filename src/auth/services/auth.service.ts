@@ -10,21 +10,26 @@ import { CreateStudentDto } from '../dto/auth.dto';
 
 export type AuthInput = { email: string; password: string };
 
-export type SigninData = {
+
+export type StudentSigninData = {
     studentId: string;
     email: string;
     firstName: string;
     lastName: string;
     role: string;
+    message: string;
 };
 
 export type AuthResult = {
-    accessToken: string;
-    studentId: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    role: string;
+    success: boolean;
+    data: {
+        accessToken: string;
+        studentId: string;
+        email: string;
+        firstName: string;
+        lastName: string;
+        role: string;
+    };
 };
 
 @Injectable()
@@ -75,7 +80,7 @@ export class AuthService {
         return student;
     }
 
-    async signIn(user: SigninData): Promise<AuthResult> {
+    async signIn(user: StudentSigninData): Promise<AuthResult> {
         const payload = {
             sub: user.studentId,
             email: user.email,
@@ -87,12 +92,15 @@ export class AuthService {
         const accessToken = await this.jwtService.signAsync(payload);
 
         return {
-            accessToken,
-            studentId: user.studentId,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            role: user.role,
+            success: true,
+            data: {
+                accessToken,
+                studentId: user.studentId,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                role: user.role,
+            },
         };
     }
 }

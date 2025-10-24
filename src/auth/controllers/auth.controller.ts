@@ -4,6 +4,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
@@ -58,25 +59,8 @@ export class AuthController {
       },
     },
   })
-  @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async signIn(@Body() loginDto: StudentLoginDto): Promise<AuthResult> {
-
-    const student = await this.authService.validateStudent(
-      loginDto.email,
-      loginDto.password,
-    );
-
-    if (!student) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    return this.authService.signIn({
-      studentId: student.id,
-      email: student.email,
-      firstName: student.firstName,
-      lastName: student.lastName,
-      role: student.role,
-    });
+ 
+ async login(@Req() req: any) {
+    return this.authService.signIn(req.user);
   }
 }
-

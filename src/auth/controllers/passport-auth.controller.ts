@@ -37,16 +37,6 @@ export class PassportAuthController {
     return this.authService.signIn(req.user);
   }
 
-  @UseGuards(PassportJwtAuthGuard)
-  @Get('/me')
-  @ApiBearerAuth('access-token')
-  @ApiOperation({ summary: 'Get currently logged-in student info' })
-  @ApiResponse({
-    status: 200,
-    description: 'Returns student info from verified JWT token',
-  })
-  async getProfile(@Req() req: any) {
-    console.log('Authenticated student:', req.user);
-    return req.user;
+ 
   }
-}
+

@@ -25,7 +25,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('Auth', 'Handles student authentication and registration')
     .addTag('Students', 'Manages student profiles and records')
-    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'user-token')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
