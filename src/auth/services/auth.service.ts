@@ -3,12 +3,13 @@ import {
     ConflictException,
     UnauthorizedException,
 } from '@nestjs/common';
-
-import { StudentsService } from '../../students/students.service';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { StudentsService } from '../../students/students.service';
 import { CreateStudentDto } from '../dto/auth.dto';
 
 export type AuthInput = { email: string; password: string };
+
 
 export type StudentSigninData = {
     studentId: string;
@@ -20,17 +21,23 @@ export type StudentSigninData = {
 };
 
 export type AuthResult = {
-    accessToken: string;
-    studentId: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    role: string;
+    success: boolean;
+    data: {
+        accessToken: string;
+        studentId: string;
+        email: string;
+        firstName: string;
+        lastName: string;
+        role: string;
+    };
 };
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly studentsService: StudentsService) { }
+    constructor(
+        private readonly studentsService: StudentsService,
+        private readonly jwtService: JwtService,
+    ) { }
 
     async register(dto: CreateStudentDto) {
         const { email, password, firstName, lastName, phone, matricNo } = dto;
@@ -51,7 +58,10 @@ export class AuthService {
             password: hashedPassword,
             role: 'student',
         };
-        const newStudent = await this.studentsService.create(createDto as unknown as CreateStudentDto);
+
+        const newStudent = await this.studentsService.create(
+            createDto as unknown as CreateStudentDto,
+        );
 
         const { password: _, ...studentData } = newStudent;
         return {
@@ -59,28 +69,41 @@ export class AuthService {
             data: studentData,
         };
     }
-    async signIn({ email, password }: AuthInput): Promise<StudentSigninData> {
+
+    async validateStudent(email: string, password: string) {
         const student = await this.studentsService.findByEmail(email);
-        if (!student) {
-            throw new UnauthorizedException('Invalid credentials');
-        }
+        if (!student) return null;
 
-        const passwordMatches = await bcrypt.compare(password, student.password);
-        if (!passwordMatches) {
-            throw new UnauthorizedException('Invalid credentials');
-        }
+        const isMatch = await bcrypt.compare(password, student.password);
+        if (!isMatch) return null;
 
-        return {
-            studentId: student.id,
-            email: student.email,
-            firstName: student.firstName,
-            lastName: student.lastName,
-            role: student.role,
-            message: 'Sign-in successful',
-        };
+        return student;
     }
 
+    async signIn(user: StudentSigninData): Promise<AuthResult> {
+        const payload = {
+            sub: user.studentId,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+        };
 
+        const accessToken = await this.jwtService.signAsync(payload);
+
+        return {
+            success: true,
+            data: {
+                accessToken,
+                studentId: user.studentId,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                role: user.role,
+            },
+        };
+    }
 }
+
 
 
