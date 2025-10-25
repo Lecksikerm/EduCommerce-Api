@@ -10,6 +10,7 @@ import { Base } from './dal/entities/base.entity';
 import { Student } from './dal/entities/student.entity';
 import { TransformInterceptor } from './common/interceptors/transform-interceptor';
 import { AuthModule } from './auth/auth.module';
+import { StudentProfileModule } from './students/student-profile/student-profile.module';
 
 
 @Catch()
@@ -68,6 +69,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
 
     StudentsModule,
+    StudentProfileModule,
     AuthModule,
 
   ],
