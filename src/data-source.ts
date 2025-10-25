@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
-import { Student } from './src/dal/entities/student.entity';
+import { Student } from './dal/entities/student.entity';
+import { Admin } from './dal/entities/admin.entity';
 
 dotenv.config();
 
@@ -11,7 +12,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASS || 'postgres',
   database: process.env.DB_NAME || 'educommerce',
-  entities: [Student],
+  entities: [Student, Admin],
   migrations: ['src/migrations/*.ts'],
   synchronize: false, 
 });
