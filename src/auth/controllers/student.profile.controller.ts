@@ -14,7 +14,7 @@ import { PassportJwtAuthGuard } from '../guards/passport-jwt.guard';
 
 
 @ApiTags('Student Profile')
-@Controller('v1/student-profile')
+@Controller('v1/student/profile')
 export class StudentProfileController {
 
     @UseGuards(PassportJwtAuthGuard)
