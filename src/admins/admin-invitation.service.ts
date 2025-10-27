@@ -28,30 +28,26 @@ export class AdminInvitationService {
     private readonly mailService: MailService,
   ) {}
 
-  // Invite new admin
   async inviteAdmin(dto: InviteAdminDto, currentAdmin: Admin) {
     if (currentAdmin.role !== 'superadmin') {
       throw new ForbiddenException('Only Super Admins can send invitations');
     }
 
-    // Check if email already exists as an admin
     const existingAdmin = await this.adminRepo.findOne({ where: { email: dto.email } });
     if (existingAdmin) {
       throw new ConflictException('This email already belongs to an existing admin');
     }
 
-    // Check existing invitation
     const existingInvite = await this.inviteRepo.findOne({ where: { email: dto.email } });
     if (existingInvite) {
       if (existingInvite.expiresAt > new Date()) {
         throw new ConflictException('An active invitation already exists for this email');
       } else {
-        // Delete expired invitation
+
         await this.inviteRepo.delete(existingInvite.id);
       }
     }
 
-    // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
@@ -66,7 +62,6 @@ export class AdminInvitationService {
 
     await this.inviteRepo.save(invite);
 
-    // Send OTP email
     try {
       await this.mailService.sendMail(
         dto.email,
@@ -82,7 +77,6 @@ export class AdminInvitationService {
     return { success: true, message: `OTP sent to ${dto.email}`, expiresAt };
   }
 
-  // Verify OTP and create admin
   async verifyOtp(dto: VerifyOtpDto) {
     const invitation = await this.inviteRepo.findOne({ where: { email: dto.email } });
     if (!invitation) throw new NotFoundException('No invitation found for this email');
@@ -113,7 +107,6 @@ export class AdminInvitationService {
     };
   }
 
-  // Resend OTP
   async resendOtp(email: string) {
     const invitation = await this.inviteRepo.findOne({ where: { email } });
     if (!invitation) throw new NotFoundException('No pending invitation for this email');
@@ -136,7 +129,6 @@ export class AdminInvitationService {
     return { success: true, message: 'New OTP sent successfully', expiresAt };
   }
 
-  // Cleanup expired invitations
   @Cron(CronExpression.EVERY_30_MINUTES)
   async cleanExpiredInvites() {
     const now = new Date();
