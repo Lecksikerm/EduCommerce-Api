@@ -11,9 +11,13 @@ export class AdminJwtStrategy extends PassportStrategy(Strategy, 'admin-jwt') {
     @InjectRepository(Admin)
     private readonly adminRepo: Repository<Admin>,
   ) {
+    if (!process.env.JWT_ADMIN_SECRET) {
+      throw new Error('Missing environment variable: JWT_ADMIN_SECRET');
+    }
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.JWT_ADMIN_SECRET || 'my-super-admin-secret-key',
+      secretOrKey: process.env.JWT_ADMIN_SECRET, 
     });
   }
 
@@ -26,7 +30,7 @@ export class AdminJwtStrategy extends PassportStrategy(Strategy, 'admin-jwt') {
     return {
       id: admin.id,
       email: admin.email,
-      role: 'admin',
+      role: admin.role,
     };
   }
 }

@@ -43,7 +43,7 @@ export class AdminService {
     async validateAdmin(email: string, password: string): Promise<Admin> {
         const admin = await this.adminRepo.findOne({
             where: { email },
-            select: ['id', 'email', 'name', 'password'],
+            select: ['id', 'email', 'name', 'password', 'role'],
         });
 
         if (!admin) {
@@ -61,28 +61,50 @@ export class AdminService {
     async login(dto: LoginAdminDto) {
         const admin = await this.validateAdmin(dto.email, dto.password);
 
+        if (!process.env.JWT_ADMIN_SECRET) {
+            throw new Error('Missing environment variable: JWT_ADMIN_SECRET');
+        }
         const payload = {
             sub: admin.id,
             email: admin.email,
-            role: 'admin',
+            role: admin.role,
         };
 
         const { password, ...adminWithoutPassword } = admin;
 
         return {
             access_token: this.jwtService.sign(payload, {
-                secret: process.env.JWT_ADMIN_SECRET || 'my-super-admin-secret-key',
+                secret: process.env.JWT_ADMIN_SECRET,
                 expiresIn: '1d',
             }),
             admin: adminWithoutPassword,
         };
     }
 
-    async findAll(): Promise<Partial<Admin>[]> {
-        return this.adminRepo.find({
-            select: ['id', 'email', 'name', 'createdAt', 'updatedAt'],
-        });
+    async findAllPaginated(page = 1, limit = 10, search = '') {
+        const query = this.adminRepo.createQueryBuilder('admin');
+
+        if (search) {
+            query.where('admin.name ILIKE :search OR admin.email ILIKE :search', {
+                search: `%${search}%`,
+            });
+        }
+
+        query.orderBy('admin.createdAt', 'DESC')
+            .skip((page - 1) * limit)
+            .take(limit);
+
+        const [data, total] = await query.getManyAndCount();
+
+        return {
+            data,
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+        };
     }
+
 
     async findOne(id: string): Promise<Partial<Admin>> {
         const admin = await this.adminRepo.findOne({ where: { id } });
