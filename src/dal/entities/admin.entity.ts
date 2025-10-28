@@ -7,7 +7,7 @@ import { Exclude } from 'class-transformer';
 export class Admin extends Base {
   @Column({ type: 'varchar', length: 100 })
   name: string;
-  
+
   @Exclude()
   @Column({ type: 'varchar', length: 255 })
   password: string;
@@ -16,7 +16,13 @@ export class Admin extends Base {
   email: string;
 
   @Column({ default: 'admin' })
-  role: string; 
+  role: string;
+
+  @Column({ default: false })
+  isVerified: boolean;
+
+  @Column({ type: 'uuid', nullable: true })
+  invitedBy?: string;
 }
 
 

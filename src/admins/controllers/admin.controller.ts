@@ -23,8 +23,9 @@ import {
 } from '@nestjs/swagger';
 import { AdminJwtAuthGuard } from 'src/auth/guards/admin-jwt.guard';
 import { AdminGuard } from '../admin.guard';
-import { AdminService } from '../admin.service';
-import { CreateAdminDto } from '../admin.dto';
+import { AdminService } from '../services/admin.service';
+import { CreateAdminDto } from '../dto/admin.dto';
+import { PaginationDto } from '../dto/pagination.dto';
 
 
 @ApiTags('Admins')
@@ -60,15 +61,14 @@ export class AdminController {
     },
   })
   async getAllAdmins(
-    @Query('page') page = 1,
-    @Query('limit') limit = 10,
-    @Query('search') search = '',
+    @Query() paginationDto: PaginationDto,
     @Req() req,
   ) {
     if (req.user.role !== 'superadmin') {
       throw new ForbiddenException('Only Super Admins can access this route');
     }
 
+    const { page, limit, search } = paginationDto;
     return this.adminService.findAllPaginated(+page, +limit, search);
   }
 
