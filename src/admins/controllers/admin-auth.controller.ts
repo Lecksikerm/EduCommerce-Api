@@ -25,7 +25,7 @@ import { AdminAuthService } from '../services/admin.auth.service';
 import { ResetPasswordDto, UpdateInitialPasswordDto } from '../dto/password-dto';
 
 @ApiTags('Admin Auth')
-@Controller('admin/auth')
+@Controller('/admin/auth')
 export class AdminAuthController {
   constructor(private readonly adminAuthService: AdminAuthService) { }
 
