@@ -23,7 +23,7 @@ export class AdminAuthService {
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
     private readonly otpService: OtpService,
-  ) { }
+  ) {}
 
   async inviteAdmin(dto: CreateAdminDto, inviter: any) {
     const existing = await this.adminRepo.findOne({ where: { email: dto.email } });
@@ -66,8 +66,7 @@ export class AdminAuthService {
     if (!isValid) throw new UnauthorizedException('Invalid email or password');
 
     if (!admin.isVerified) {
-      admin.isVerified = true;
-      await this.adminRepo.save(admin);
+      await this.adminRepo.update({ id: admin.id }, { isVerified: true });
     }
 
     const payload = { sub: admin.id, email: admin.email, role: admin.role };
@@ -86,21 +85,33 @@ export class AdminAuthService {
           name: admin.name,
           email: admin.email,
           role: admin.role,
-          isVerified: admin.isVerified,
+          isVerified: true,
         },
       },
     };
   }
 
   async updateInitialPassword(adminId: string, dto: UpdateInitialPasswordDto) {
+    if (!adminId) throw new BadRequestException('Invalid admin token');
+
     const admin = await this.adminRepo.findOne({ where: { id: adminId } });
     if (!admin) throw new NotFoundException('Admin not found');
 
-    admin.password = await bcrypt.hash(dto.newPassword, 10);
-    admin.isVerified = true;
-    await this.adminRepo.save(admin);
+    const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
 
-    const payload = { sub: admin.id, email: admin.email, role: admin.role };
+    await this.adminRepo.update(
+      { id: adminId },
+      { password: hashedPassword, isVerified: true },
+    );
+
+    const updatedAdmin = await this.adminRepo.findOne({ where: { id: adminId } });
+
+    const payload = {
+      sub: updatedAdmin.id,
+      email: updatedAdmin.email,
+      role: updatedAdmin.role,
+    };
+
     const token = this.jwtService.sign(payload, {
       secret: process.env.JWT_ADMIN_SECRET,
       expiresIn: '1d',
@@ -112,11 +123,11 @@ export class AdminAuthService {
       data: {
         access_token: token,
         admin: {
-          id: admin.id,
-          name: admin.name,
-          email: admin.email,
-          role: admin.role,
-          isVerified: admin.isVerified,
+          id: updatedAdmin.id,
+          name: updatedAdmin.name,
+          email: updatedAdmin.email,
+          role: updatedAdmin.role,
+          isVerified: updatedAdmin.isVerified,
         },
       },
     };
@@ -139,9 +150,12 @@ export class AdminAuthService {
     const isValidOtp = await this.otpService.verifyOtp(dto.email, dto.otp);
     if (!isValidOtp) throw new BadRequestException('Invalid or expired OTP');
 
-    admin.password = await bcrypt.hash(dto.newPassword, 10);
-    await this.adminRepo.save(admin);
+    const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
+
+    await this.adminRepo.update({ id: admin.id }, { password: hashedPassword });
 
     return { success: true, message: 'Password reset successfully' };
   }
 }
+
+

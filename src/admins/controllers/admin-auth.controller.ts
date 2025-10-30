@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   ForbiddenException,
+  Patch,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -31,7 +32,7 @@ export class AdminAuthController {
 
   @Post('/invite')
   @ApiBearerAuth()
-  @UseGuards(AdminJwtAuthGuard, AdminGuard)
+  @UseGuards( AdminGuard)
   @ApiOperation({ summary: 'Invite a new admin (Superadmin only)' })
   @ApiBody({ type: CreateAdminDto })
   @ApiResponse({
@@ -79,7 +80,7 @@ export class AdminAuthController {
     return this.adminAuthService.login(dto);
   }
 
-  @Post('/update-password')
+  @Patch('/password')
   @ApiBearerAuth()
   @UseGuards(AdminJwtAuthGuard)
   @ApiOperation({
@@ -101,7 +102,7 @@ export class AdminAuthController {
     const adminId = req.user.sub;
     return this.adminAuthService.updateInitialPassword(adminId, dto);
   }
-  @Post('/request-password-reset')
+  @Post('/forgot-password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Request password reset OTP via email' })
   @ApiBody({

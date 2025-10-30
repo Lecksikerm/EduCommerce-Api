@@ -35,7 +35,7 @@ export class AdminController {
 
   @Get('/all')
   @ApiBearerAuth()
-  @UseGuards(AdminJwtAuthGuard, AdminGuard)
+  @UseGuards( AdminGuard)
   @ApiOperation({ summary: 'Get paginated list of all admins (Super Admin only)' })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
@@ -74,7 +74,7 @@ export class AdminController {
 
   @Get('/:id')
   @ApiBearerAuth()
-  @UseGuards(AdminJwtAuthGuard, AdminGuard)
+  @UseGuards( AdminGuard)
   @ApiOperation({ summary: 'Get single admin by ID (Super Admin only)' })
   @ApiResponse({
     status: 200,

@@ -17,18 +17,18 @@ export class AdminJwtStrategy extends PassportStrategy(Strategy, 'admin-jwt') {
 
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.JWT_ADMIN_SECRET, 
+      secretOrKey: process.env.JWT_ADMIN_SECRET,
     });
   }
 
-  async validate(payload: any): Promise<{ id: string; email: string; role: string }> {
+  async validate(payload: any): Promise<{ sub: string; email: string; role: string }> {
     const admin = await this.adminRepo.findOne({ where: { id: payload.sub } });
     if (!admin) {
       throw new UnauthorizedException('Invalid admin token');
     }
 
     return {
-      id: admin.id,
+      sub: admin.id,
       email: admin.email,
       role: admin.role,
     };

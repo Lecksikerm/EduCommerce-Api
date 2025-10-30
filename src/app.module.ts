@@ -12,6 +12,7 @@ import { TransformInterceptor } from './common/interceptors/transform-intercepto
 import { AuthModule } from './auth/auth.module';
 import { StudentProfileModule } from './students/student-profile/student-profile.module';
 import { AdminModule } from './admins/admin.module';
+import { OtpModule } from './otp/otp.module';
 
 
 @Catch()
@@ -73,6 +74,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     StudentProfileModule,
     AuthModule,
     AdminModule,
+    OtpModule,
 
   ],
 
